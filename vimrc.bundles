@@ -17,7 +17,7 @@ filetype off " required! turn off
 " inspired by spf13, 自定义需要的插件集合
 if !exists('g:bundle_groups')
     " let g:bundle_groups=['python', 'javascript', 'markdown', 'html', 'css', 'tmux', 'beta', 'json', 'nginx', 'golang', 'ruby', 'less', 'php', 'coffeescript']
-    let g:bundle_groups=['python', 'javascript', 'markdown', 'html', 'css', 'tmux', 'beta']
+    let g:bundle_groups=['python', 'javascript', 'markdown', 'html', 'css', 'tmux', 'beta', 'json', 'golang', 'vue', 'coffeescript']
 endif
 
 " ----------------------------------------------------------------------------
@@ -31,6 +31,9 @@ call plug#begin('~/.vim/bundle')
 
 " syntastic
 Plug 'scrooloose/syntastic'
+
+" editorconfig
+Plug 'editorconfig/editorconfig-vim'
 
 " Group dependencies, vim-snippets depends on ultisnips
 " 代码片段快速插入 (snippets中,是代码片段资源,需要学习)
@@ -175,7 +178,30 @@ if count(g:bundle_groups, 'golang')
     " 1. vim a.go
     " 2. :GoInstallBinaries
     " vimgo
-    Plug 'fatih/vim-go', {'for': 'go'}
+    Plug 'fatih/vim-go'
+    " au FileType go nmap <leader>r <Plug>(go-run)
+    au FileType go nmap <leader>b <Plug>(go-build)
+    au FileType go nmap <leader>p <Plug>(go-import)
+    au FileType go nmap <leader>t <Plug>(go-test)
+    au FileType go nmap <leader>c <Plug>(go-coverage)
+    au FileType go nmap <Leader>ds <Plug>(go-def-split)
+    au FileType go nmap <Leader>dv <Plug>(go-def-vertical)
+    au FileType go nmap <Leader>dt <Plug>(go-def-tab)
+    au FileType go nmap <Leader>gd <Plug>(go-doc)
+    au FileType go nmap <Leader>gv <Plug>(go-doc-vertical)
+    au FileType go nmap <Leader>gb <Plug>(go-doc-browser)
+    let g:go_highlight_functions = 1
+    let g:go_highlight_methods = 1
+    let g:go_highlight_fields = 1
+    let g:go_highlight_types = 1
+    let g:go_highlight_operators = 1
+    let g:go_highlight_build_constraints = 1
+    let g:go_fmt_command = "goimports"
+endif
+
+if count(g:bundle_groups, 'vue')
+    " vim-vue
+    Plug 'posva/vim-vue'
 endif
 
 
@@ -204,12 +230,23 @@ endif
 if count(g:bundle_groups, 'javascript')
     " javascript
     " 注意: syntax这个插件要放前面
-    Plug 'othree/yajs.vim' | Plug 'pangloss/vim-javascript'
+    Plug 'othree/yajs.vim'
+    Plug 'pangloss/vim-javascript'
+    Plug 'marijnh/tern_for_vim', {'do': 'npm install'}
+    Plug 'heavenshell/vim-jsdoc', {'for': ['javascript', 'jsx']}
+    Plug 'burnettk/vim-angular'
+    Plug 'mxw/vim-jsx'
+    let g:jsx_ext_required = 0
     " Plug 'jelera/vim-javascript-syntax' | Plug 'pangloss/vim-javascript'
 
     " TODO: jquery? for, remove or keep
     Plug 'othree/javascript-libraries-syntax.vim'
+    Plug 'moll/vim-node'
+    autocmd User Node if &filetype == "javascript" | setlocal expandtab | endif
+    Plug 'myhere/vim-nodejs-complete'
     let g:used_javascript_libs = 'jquery,underscore,backbone'
+    Plug 'maksimr/vim-jsbeautify'
+
 
     " for javascript 自动补全, 配合YCM, 需要安装全局环境的（非nvm中) node.js&npm
     " 安装完成后还需要在 bundle/tern_for_vim 下执行 npm install 安装依赖
@@ -244,7 +281,14 @@ endif
 
 if count(g:bundle_groups, 'html')
     " ###### emmet HTML complete #########
-    " Plug "mattn/emmet-vim"
+    Plug 'mattn/emmet-vim'
+    " <leader>ig to trigger
+    let g:user_emmet_mode='a'
+    let g:user_emmet_install_global = 0
+    "let g:user_emmet_leader_key='<Tab>'
+    let g:user_emmet_expandabbr_key = '<Tab>'
+    autocmd FileType html,css EmmetInstall
+
 endif
 
 if count(g:bundle_groups, 'nginx')
@@ -264,6 +308,7 @@ if count(g:bundle_groups, 'beta')
     autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=black
 
 endif
+
 
 
 " Add plugins to &runtimepath
@@ -412,7 +457,7 @@ call plug#end()
 
     func! g:KInYCM()
         if pumvisible()
-            return "\<C-p>"
+            return "\<C-r>"
         else
             return "\<c-k>"
         endif
@@ -436,11 +481,32 @@ call plug#end()
     let g:closetag_html_style=1
 " }}}
 
+" js-jsbeautify {{{
+  " let g:jsbeautify = {"indent_size": 4, "indent_char": "\t"}
+  " by default
+  let g:jsbeautify_engine = "node"
+  " If you bin name for node is nodejs
+  let g:jsbeautify_engine = "nodejs"
+  let g:jsbeautify_engine = "v8"
+  " or if you have other alias
+  let g:jsbeautify_engine = "v8-alias"
+  " map <c-f> :call JsBeautify()<cr>
+  autocmd FileType javascript noremap <buffer>  <c-f> :call JsBeautify()<cr>
+  " for json
+  autocmd FileType json noremap <buffer> <c-f> :call JsonBeautify()<cr>
+  " for jsx
+  autocmd FileType jsx noremap <buffer> <c-f> :call JsxBeautify()<cr>
+  " for html
+  autocmd FileType html noremap <buffer> <c-f> :call HtmlBeautify()<cr>
+  " for css or scss
+  autocmd FileType css noremap <buffer> <c-f> :call CSSBeautify()<cr>
+" }}}
+
 " ################### 快速编码 ###################
 
 " nerdcommenter {{{
     let g:NERDSpaceDelims=1
-    "TODO: for python, one space
+    let g:NERDAltDelims_python = 1
 " }}}
 
 " trailingwhitespace {{{
@@ -809,5 +875,8 @@ call plug#end()
     " setenv PYTHONIOENCODING UTF-8
     " nnoremap <leader>y :call Yapf()<cr>
 " }}}
+
+" jsdoc
+nmap <silent> <C-l> <Plug>(jsdoc)
 
 "------------------------------------------- end of configs --------------------------------------------
